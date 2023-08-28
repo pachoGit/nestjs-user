@@ -28,5 +28,5 @@ export class CapabilityRole {
     updatedAt: Date;
 
     @DeleteDateColumn({ name: 'deleted_at' })
-    deleteAt: Date;
+    deletedAt: Date;
 }

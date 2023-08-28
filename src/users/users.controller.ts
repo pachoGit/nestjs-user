@@ -20,7 +20,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { MapperUserImpl } from './dto/mapper-user-impl';
 import { ShowUserDto } from './dto/show-user.dto';
-import { User } from './entities/user.entity';
 import { QueryParamsUserDto } from './dto/query-param-user.dto';
 import { ChangeStatusUserDto } from './dto/change-status-user.dto';
 

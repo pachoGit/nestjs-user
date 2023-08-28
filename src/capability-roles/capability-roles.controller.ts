@@ -19,11 +19,14 @@ import { CapabilityRole } from './entities/capability-role.entity';
 import { QueryParamsCapabilityRoleDto } from './dto/query-params-capability-role.dto';
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
 import { ChangeStatusCapabilityRoleDto } from './dto/change-status-capability-role.dto';
+import { MapperCapabilityRole } from './dto/mapper-capability-role';
+import { ShowCapabilityRoleDto } from './dto/show-capability-role.dto';
 
 @Controller('capability/roles')
 export class CapabilityRolesController {
     constructor(
         private readonly capabilityRolesService: CapabilityRolesService,
+        private readonly mapper: MapperCapabilityRole,
     ) {}
 
     @Post()
@@ -31,10 +34,11 @@ export class CapabilityRolesController {
         const role = await this.capabilityRolesService.create(
             createCapabilityRoleDto,
         );
-        const response = new GeneralResponse<CapabilityRole>().toObject(
+        const present = this.mapper.toShow(role);
+        const response = new GeneralResponse<ShowCapabilityRoleDto>().toObject(
             HttpStatus.CREATED,
             'Capability role created',
-            role,
+            present,
         );
         return response;
     }
@@ -42,10 +46,11 @@ export class CapabilityRolesController {
     @Get('/get')
     async getAll(@Query() queryParams: QueryParamsCapabilityRoleDto) {
         const roles = await this.capabilityRolesService.getAll(queryParams);
-        const response = new GeneralResponse<CapabilityRole>().toArray(
+        const present = this.mapper.toShowArray(roles);
+        const response = new GeneralResponse<ShowCapabilityRoleDto>().toArray(
             HttpStatus.OK,
             'List capability roles',
-            roles,
+            present,
         );
         return response;
     }
@@ -55,13 +60,20 @@ export class CapabilityRolesController {
         @Paginate() queryPaginate: PaginateQuery,
         @Query() queryParams: QueryParamsCapabilityRoleDto,
     ) {
-        const roles = await this.capabilityRolesService.list(
+        const paginated = await this.capabilityRolesService.list(
             queryPaginate,
             queryParams,
         );
-        const response = new GeneralResponse<
-            Paginated<CapabilityRole>
-        >().toObject(HttpStatus.OK, 'List capability roles', roles);
+        const roles = this.mapper.toShowArray(paginated.data);
+        const present = {
+            ...paginated,
+            data: roles,
+        };
+        const response = new GeneralResponse<Paginated<any>>().toObject(
+            HttpStatus.OK,
+            'List capability roles',
+            present,
+        );
         return response;
     }
 
