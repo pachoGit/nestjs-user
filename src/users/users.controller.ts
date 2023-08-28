@@ -11,15 +11,18 @@ import {
     Put,
     Query,
 } from '@nestjs/common';
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
+
+import { GeneralResponse } from '@global/dto/response';
+
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { GeneralResponse } from '@app/dto/response';
 import { MapperUserImpl } from './dto/mapper-user-impl';
 import { ShowUserDto } from './dto/show-user.dto';
-import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
 import { User } from './entities/user.entity';
 import { QueryParamsUserDto } from './dto/query-param-user.dto';
+import { ChangeStatusUserDto } from './dto/change-status-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -30,9 +33,9 @@ export class UsersController {
 
     @Post()
     async create(@Body() createUserDto: CreateUserDto) {
-        let user = await this.usersService.create(createUserDto);
-        let showUser = this.mapper.toShow(user);
-        let response = new GeneralResponse<ShowUserDto>().toObject(
+        const user = await this.usersService.create(createUserDto);
+        const showUser = this.mapper.toShow(user);
+        const response = new GeneralResponse<ShowUserDto>().toObject(
             HttpStatus.CREATED,
             'User created',
             showUser,
@@ -42,9 +45,9 @@ export class UsersController {
 
     @Get('/get')
     async getAll(@Query() queryParams: QueryParamsUserDto) {
-        let users = await this.usersService.getAll(queryParams);
-        let showUsers = this.mapper.toShowArray(users);
-        let response = new GeneralResponse<ShowUserDto>().toArray(
+        const users = await this.usersService.getAll(queryParams);
+        const showUsers = this.mapper.toShowArray(users);
+        const response = new GeneralResponse<ShowUserDto>().toArray(
             HttpStatus.OK,
             'List users',
             showUsers,
@@ -57,25 +60,48 @@ export class UsersController {
         @Paginate() queryPaginate: PaginateQuery,
         @Query() queryParams: QueryParamsUserDto,
     ) {
-        const users = await this.usersService.list(queryPaginate, queryParams);
-        const response = new GeneralResponse<Paginated<User>>().toObject(
+        const paginatedUsers = await this.usersService.list(
+            queryPaginate,
+            queryParams,
+        );
+        const users = this.mapper.toShowArray(paginatedUsers.data);
+        let showUsers = {
+            ...paginatedUsers,
+            data: users,
+        };
+        const response = new GeneralResponse<Paginated<any>>().toObject(
             HttpStatus.OK,
             'List users',
-            users,
+            showUsers,
         );
         return response;
     }
 
     @Get('/show/:id')
     async findOne(@Param('id') id: string) {
-        let user = await this.usersService.findOne(+id);
+        const user = await this.usersService.findOne(+id);
         if (user == null) {
             throw new NotFoundException('No se ha encontrado el usuario');
         }
-        let showUser = this.mapper.toShow(user);
-        let response = new GeneralResponse<ShowUserDto>().toObject(
+        const showUser = this.mapper.toShow(user);
+        const response = new GeneralResponse<ShowUserDto>().toObject(
             HttpStatus.FOUND,
             'User found',
+            showUser,
+        );
+        return response;
+    }
+
+    @Patch(':id')
+    async changeStatus(
+        @Param('id') id: string,
+        @Body() changeStatusDto: ChangeStatusUserDto,
+    ) {
+        const user = await this.usersService.changeStatus(+id, changeStatusDto);
+        const showUser = this.mapper.toShow(user);
+        const response = new GeneralResponse<ShowUserDto>().toObject(
+            HttpStatus.OK,
+            'User updated',
             showUser,
         );
         return response;
@@ -87,8 +113,8 @@ export class UsersController {
         @Body() updateUserDto: UpdateUserDto,
     ) {
         const user = await this.usersService.update(+id, updateUserDto);
-        let showUser = this.mapper.toShow(user);
-        let response = new GeneralResponse<ShowUserDto>().toObject(
+        const showUser = this.mapper.toShow(user);
+        const response = new GeneralResponse<ShowUserDto>().toObject(
             HttpStatus.OK,
             'User updated',
             showUser,
@@ -99,7 +125,7 @@ export class UsersController {
     @Delete(':id')
     async remove(@Param('id') id: string) {
         const deleted = await this.usersService.remove(+id);
-        let response = new GeneralResponse<ShowUserDto>().toObject(
+        const response = new GeneralResponse<ShowUserDto>().toObject(
             HttpStatus.OK,
             'User delete',
             new ShowUserDto(),
