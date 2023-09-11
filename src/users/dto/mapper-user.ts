@@ -1,11 +1,35 @@
+import { plainToInstance } from 'class-transformer';
+
+import { MapperResource } from '@global/dto/mapper-resource';
 import { User } from '@users/entities/user.entity';
-import { CreateUserDto } from './create-user.dto';
 import { ShowUserDto } from './show-user.dto';
+import { Injectable } from '@nestjs/common';
+import { Paginated } from 'nestjs-paginate';
 
-export interface MapperUser {
-    toShow(user: User): ShowUserDto;
+import { MapperCapabilityRole } from '@capability/roles/dto/mapper-capability-role';
 
-    fromCreate(create: CreateUserDto): User;
+@Injectable()
+export class MapperUser implements MapperResource {
+    constructor(private mapperRole: MapperCapabilityRole) {}
 
-    toShowArray(users: User[]): ShowUserDto[];
+    toShow(data: User): ShowUserDto {
+        const present = plainToInstance(ShowUserDto, data);
+        if (data.roles) {
+            present.capability_roles = this.mapperRole.toShowArray(data.roles);
+        }
+        return present;
+    }
+
+    toShowArray(data: User[]): ShowUserDto[] {
+        return data.map((d) => this.toShow(d));
+    }
+
+    toShowPaginated(data: Paginated<User>): Paginated<any> {
+        const list = this.toShowArray(data.data);
+        const present = {
+            ...data,
+            data: list,
+        };
+        return present;
+    }
 }

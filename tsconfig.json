@@ -11,11 +11,12 @@
         "outDir": "./dist",
         "baseUrl": "./",
         "paths": {
-            "@app/*": ["./src/*"],
             "@global/dto/*": ["./src/global/dto/*"],
             "@global/validators/*": ["./src/global/validators/*"],
             "@users/*": ["./src/users/*"],
-            "@capability/roles/*": ["./src/capability-roles/*"]
+            "@capability/roles/*": ["./src/capability-roles/*"],
+            "@many/role/user/*": ["./src/many-role-user/*"],
+            "@app/*": ["./src/*"]
         },
         "incremental": true,
         "skipLibCheck": true,

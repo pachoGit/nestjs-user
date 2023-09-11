@@ -10,6 +10,7 @@ import {
     NotFoundException,
     Put,
     Query,
+    ConsoleLogger,
 } from '@nestjs/common';
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate';
 
@@ -18,16 +19,18 @@ import { GeneralResponse } from '@global/dto/response';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { MapperUserImpl } from './dto/mapper-user-impl';
+import { MapperUser } from './dto/mapper-user';
 import { ShowUserDto } from './dto/show-user.dto';
 import { QueryParamsUserDto } from './dto/query-param-user.dto';
 import { ChangeStatusUserDto } from './dto/change-status-user.dto';
 
 @Controller('users')
 export class UsersController {
+    private logger: ConsoleLogger = new ConsoleLogger();
+
     constructor(
         private readonly usersService: UsersService,
-        private readonly mapper: MapperUserImpl,
+        private readonly mapper: MapperUser,
     ) {}
 
     @Post()
@@ -63,12 +66,8 @@ export class UsersController {
             queryPaginate,
             queryParams,
         );
-        const users = this.mapper.toShowArray(paginatedUsers.data);
-        let showUsers = {
-            ...paginatedUsers,
-            data: users,
-        };
-        const response = new GeneralResponse<Paginated<any>>().toObject(
+        const showUsers = this.mapper.toShowPaginated(paginatedUsers);
+        const response = new GeneralResponse<Paginated<ShowUserDto>>().toObject(
             HttpStatus.OK,
             'List users',
             showUsers,

@@ -67,6 +67,7 @@ export class UsersScopes {
         if (params.search) {
             query = this.search(query, params.search);
         }
+        query = query.leftJoinAndMapMany('users.roles', 'users.roles', 'roles');
         return query;
     }
 }

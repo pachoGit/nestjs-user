@@ -8,6 +8,7 @@ import { database } from './database.config';
 import { UsersModule } from './users/users.module';
 import { CapabilityRolesModule } from './capability-roles/capability-roles.module';
 import { ExistsConstraint } from '@global/validators/exists';
+import { ExistsInConstraint } from '@global/validators/exists-in';
 
 @Module({
     imports: [
@@ -22,6 +23,6 @@ import { ExistsConstraint } from '@global/validators/exists';
         CapabilityRolesModule,
     ],
     controllers: [AppController],
-    providers: [AppService, ExistsConstraint],
+    providers: [AppService, ExistsConstraint, ExistsInConstraint],
 })
 export class AppModule {}

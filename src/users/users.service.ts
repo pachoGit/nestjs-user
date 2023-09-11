@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Query } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    Query,
+    UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryParamsUserDto } from './dto/query-param-user.dto';
@@ -8,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Paginate, PaginateQuery, Paginated, paginate } from 'nestjs-paginate';
 import { UsersScopes } from './users.scopes';
 import { ChangeStatusUserDto } from './dto/change-status-user.dto';
+import { CapabilityRole } from '@capability/roles/entities/capability-role.entity';
 
 @Injectable()
 export class UsersService {
@@ -16,9 +22,21 @@ export class UsersService {
         private userRepository: Repository<User>,
     ) {}
 
-    create(createUserDto: CreateUserDto): Promise<User> {
-        const user = this.userRepository.create(createUserDto);
-        return this.userRepository.save(user);
+    async create(createUserDto: CreateUserDto): Promise<User> {
+        try {
+            const user = this.userRepository.create(createUserDto);
+            const roles = createUserDto.capability_roles.map((id) => {
+                const role = new CapabilityRole();
+                role.id = id;
+                return role;
+            });
+            user.roles = roles;
+            return this.userRepository.save(user);
+        } catch (e) {
+            throw new UnprocessableEntityException(
+                'Existe un error en la solicitud',
+            );
+        }
     }
 
     list(
@@ -34,7 +52,7 @@ export class UsersService {
         });
     }
 
-    getAll(@Query() queryParams: QueryParamsUserDto): Promise<User[]> {
+    async getAll(@Query() queryParams: QueryParamsUserDto): Promise<User[]> {
         const filter = UsersScopes.filter(
             this.userRepository,
             queryParams,
@@ -42,10 +60,13 @@ export class UsersService {
         return filter.getMany();
     }
 
-    findOne(id: number): Promise<User | null> {
+    async findOne(id: number): Promise<User | null> {
         return this.userRepository.findOne({
             withDeleted: true,
             where: { id: id },
+            relations: {
+                roles: true,
+            },
         });
     }
 

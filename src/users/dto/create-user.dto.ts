@@ -8,15 +8,17 @@ import {
 } from 'class-validator';
 import { Exists } from '@global/validators/exists';
 import { User } from '../entities/user.entity';
+import { CapabilityRole } from '@capability/roles/entities/capability-role.entity';
+import { ExistsIn } from '@global/validators/exists-in';
 
 export class CreateUserDto {
     @IsNotEmpty()
     @Length(3, 50, {
         message: 'El campo nombres debe tener entre 3 y 50 caracteres',
     })
-    @IsAlpha(undefined, {
-        message: 'El campo nombres solo debe tener letras',
-    })
+    // @IsAlpha(undefined, {
+    //     message: 'El campo nombres solo debe tener letras',
+    // })
     firstname: string;
 
     @IsNotEmpty()
@@ -44,4 +46,7 @@ export class CreateUserDto {
     //     message: 'El campo teléfono debe tener un formato válido',
     // })
     phone: string;
+
+    @ExistsIn(CapabilityRole, 'id')
+    capability_roles: number[];
 }

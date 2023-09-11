@@ -1,8 +1,10 @@
+import { User } from '@app/users/entities/user.entity';
 import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
+    ManyToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -29,4 +31,8 @@ export class CapabilityRole {
 
     @DeleteDateColumn({ name: 'deleted_at' })
     deletedAt: Date;
+
+    // Relations
+    @ManyToMany(() => User, (user) => user.roles)
+    users: User[];
 }

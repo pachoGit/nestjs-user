@@ -1,3 +1,4 @@
+import { CapabilityRole } from '@app/capability-roles/entities/capability-role.entity';
 import {
     Entity,
     Column,
@@ -5,6 +6,8 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     DeleteDateColumn,
+    JoinTable,
+    ManyToMany,
 } from 'typeorm';
 
 @Entity()
@@ -34,5 +37,20 @@ export class User {
     updatedAt: Date;
 
     @DeleteDateColumn({ name: 'deleted_at' })
-    deleteAt: Date;
+    deletedAt: Date;
+
+    // Relations
+    @ManyToMany(() => CapabilityRole, (role) => role.users)
+    @JoinTable({
+        name: 'many_role_user',
+        joinColumn: {
+            name: 'user_id',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'role_id',
+            referencedColumnName: 'id',
+        },
+    })
+    roles?: CapabilityRole[];
 }

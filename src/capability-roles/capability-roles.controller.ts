@@ -64,11 +64,7 @@ export class CapabilityRolesController {
             queryPaginate,
             queryParams,
         );
-        const roles = this.mapper.toShowArray(paginated.data);
-        const present = {
-            ...paginated,
-            data: roles,
-        };
+        const present = this.mapper.toShowPaginated(paginated);
         const response = new GeneralResponse<Paginated<any>>().toObject(
             HttpStatus.OK,
             'List capability roles',
